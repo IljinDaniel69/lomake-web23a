@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
@@ -17,16 +18,33 @@ app.use('/styles', express.static('includes/styles'));
 
 app.use(express.urlencoded({ extended: true }));
 
-// TODO: Tähän tulevat polkumäärittelyt
+// Polkumäärittelyt
 app.get('/', (req, res) => {
     res.render('index');
 });
 app.get('/palaute', (req, res) => {
     res.render('palaute');
 });
-app.post('/palaute', (req, res) => {
+app.post('/palaute', async (req, res) => {
     let name = req.body.name;
     let email = req.body.email;
+    let feedback = req.body.feedback;
+
+    const data = [];
+    data.push({
+        name: name,
+        email: email,
+        feedback: feedback
+    });
+
+    fs.writeFile('data.json', JSON.stringify(data), { encoding: 'utf8' }, (err) => {
+        if (err) {
+            console.log('ERR: Palaute-datan tallettaminen epäonnistui');
+        }
+        else {
+            console.log('OK:  Palaute-datan tallettaminen onnistui');
+        }
+    });
 
     res.render('vastaus', { name: name, email: email });
 });
