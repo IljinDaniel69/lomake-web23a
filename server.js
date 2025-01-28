@@ -22,10 +22,10 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
     res.render('index');
 });
-app.get('/palaute', (req, res) => {
+app.get('/palautelomake', (req, res) => {
     res.render('palaute');
 });
-app.post('/palaute', async (req, res) => {
+app.post('/palautelomake', async (req, res) => {
     let name = req.body.name;
     let email = req.body.email;
     let feedback = req.body.feedback;
@@ -65,6 +65,15 @@ app.post('/palaute', async (req, res) => {
             res.render('vastaus', { name: name, email: email });
         }
     });
+});
+
+// REST-palvelimen polut
+
+app.get('/palaute/', (req, res) => {
+    // Palauttaa kaikki palautteet
+});
+app.get('/palaute/:id', (req, res) => {
+    // Palauttaa yhden palautteen
 });
 
 
