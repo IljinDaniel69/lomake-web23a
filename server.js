@@ -38,9 +38,9 @@ app.post('/palaute', async (req, res) => {
             let data = [];
             try {
                 data = JSON.parse(dataString);
-                if (typeof data != Array) {
+                if (!Array.isArray(data)) {
                     data = [];
-                    throw new TypeError('Data not an array.');
+                    throw new TypeError('Data not an array');
                 }
             } catch (error) {
                 console.log('ERR: Palaute-datan lukeminen epäonnistui');
