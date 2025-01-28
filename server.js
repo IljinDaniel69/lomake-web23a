@@ -35,7 +35,17 @@ app.post('/palaute', async (req, res) => {
             console.log('ERR: Palaute-datan lukeminen epäonnistui');
         }
         else {
-            const data = JSON.parse(dataString);
+            let data = [];
+            try {
+                data = JSON.parse(dataString);
+                if (typeof data != Array) {
+                    data = [];
+                    throw new TypeError('Data not an array.');
+                }
+            } catch (error) {
+                console.log('ERR: Palaute-datan lukeminen epäonnistui');
+                console.log(error);
+            }
 
             data.push({
                 name: name,
