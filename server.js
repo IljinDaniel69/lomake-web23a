@@ -30,23 +30,31 @@ app.post('/palaute', async (req, res) => {
     let email = req.body.email;
     let feedback = req.body.feedback;
 
-    const data = [];
-    data.push({
-        name: name,
-        email: email,
-        feedback: feedback
-    });
-
-    fs.writeFile('data.json', JSON.stringify(data), { encoding: 'utf8' }, (err) => {
+    fs.readFile('data.json', 'utf8', function (err, dataString) {
         if (err) {
-            console.log('ERR: Palaute-datan tallettaminen epäonnistui');
+            console.log('ERR: Palaute-datan lukeminen epäonnistui');
         }
         else {
-            console.log('OK:  Palaute-datan tallettaminen onnistui');
+            const data = JSON.parse(dataString);
+
+            data.push({
+                name: name,
+                email: email,
+                feedback: feedback
+            });
+        
+            fs.writeFile('data.json', JSON.stringify(data), { encoding: 'utf8' }, (err) => {
+                if (err) {
+                    console.log('ERR: Palaute-datan tallettaminen epäonnistui');
+                }
+                else {
+                    console.log('OK:  Palaute-datan tallettaminen onnistui');
+                }
+            });
+        
+            res.render('vastaus', { name: name, email: email });
         }
     });
-
-    res.render('vastaus', { name: name, email: email });
 });
 
 
