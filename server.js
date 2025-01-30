@@ -3,6 +3,9 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 
+// Palaute-data REST-apia varten
+import feedback from './feedback_mock.json' with { type: 'json' };
+
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
@@ -18,7 +21,7 @@ app.use('/styles', express.static('includes/styles'));
 
 app.use(express.urlencoded({ extended: true }));
 
-// Polkumäärittelyt
+// Polkumäärittelyt ejs-sivupohjia käyttäville web-sivuille
 app.get('/', (req, res) => {
     res.render('index');
 });
@@ -68,13 +71,22 @@ app.post('/palautelomake', async (req, res) => {
 });
 
 // REST-palvelimen polut
-
 app.get('/palaute/', (req, res) => {
     // Palauttaa kaikki palautteet
+    res.json(feedback);
 });
 app.get('/palaute/:id', (req, res) => {
     // Palauttaa yhden palautteen
 });
+app.post('/palaute/uusi', (req, res) => {
+    // Lisää uuden palautteen. Palaute pyynnön body:ssä
+});
+app.put('/palaute/:id', (req, res) => {
+    // Muokkaa tietyn palautteen sisältöä. (Miksi tällainen on?)
+});
+app.delete('/palaute/:id', (req, res) => {
+    // Poistaa tietyn palautteen. (Miksi tällainen on?)
+});
 
-
+// Aina viimeisenä palvelimen käynnistys
 app.listen(port, host, () => console.log(`${host}:${port} kuuntelee...`));
