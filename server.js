@@ -1,92 +1,107 @@
-import express from 'express';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import { name } from "ejs";
+import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Palaute-data REST-apia varten
-import feedback from './feedback_mock.json' with { type: 'json' };
-
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
-
-const host = 'localhost';
-const port = 3000;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
+const port = 3000;
+const host = "localhost";
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'templates'));
-
-app.use('/styles', express.static('includes/styles'));
-
+// Middleware JSON:n ja lomakedatan käsittelyyn
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Polkumäärittelyt ejs-sivupohjia käyttäville web-sivuille
-app.get('/', (req, res) => {
-    res.render('index');
-});
-app.get('/palautelomake', (req, res) => {
-    res.render('palaute');
-});
-app.post('/palautelomake', async (req, res) => {
-    let name = req.body.name;
-    let email = req.body.email;
-    let feedback = req.body.feedback;
+// Asetetaan EJS näkymämoottoriksi
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "templates"));
 
-    fs.readFile('data.json', 'utf8', function (err, dataString) {
-        if (err) {
-            console.log('ERR: Palaute-datan lukeminen epäonnistui');
-        }
-        else {
-            let data = [];
-            try {
-                data = JSON.parse(dataString);
-                if (!Array.isArray(data)) {
-                    data = [];
-                    throw new TypeError('Data not an array');
-                }
-            } catch (error) {
-                console.log('ERR: Palaute-datan lukeminen epäonnistui');
-                console.log(error);
-            }
+// Staattiset tiedostot
+app.use("/styles", express.static(path.join(__dirname, "includes/styles")));
 
-            data.push({
-                name: name,
-                email: email,
-                feedback: feedback
-            });
-        
-            fs.writeFile('data.json', JSON.stringify(data), { encoding: 'utf8' }, (err) => {
-                if (err) {
-                    console.log('ERR: Palaute-datan tallettaminen epäonnistui');
-                }
-                else {
-                    console.log('OK:  Palaute-datan tallettaminen onnistui');
-                }
-            });
-        
-            res.render('vastaus', { name: name, email: email });
-        }
-    });
+// Ladataan palautedata JSON-tiedostosta
+const feedbackFile = path.join(__dirname, "feedback_mock.json");
+let feedback = JSON.parse(fs.readFileSync(feedbackFile, "utf8"));
+
+// **GET /** - Näyttää palautelomakkeen
+app.get("/", (req, res) => {
+  res.json("index");
 });
 
-// REST-palvelimen polut
-app.get('/palaute/', (req, res) => {
-    // Palauttaa kaikki palautteet
-    res.json(feedback);
-});
-app.get('/palaute/:id', (req, res) => {
-    // Palauttaa yhden palautteen
-});
-app.post('/palaute/uusi', (req, res) => {
-    // Lisää uuden palautteen. Palaute pyynnön body:ssä
-});
-app.put('/palaute/:id', (req, res) => {
-    // Muokkaa tietyn palautteen sisältöä. (Miksi tällainen on?)
-});
-app.delete('/palaute/:id', (req, res) => {
-    // Poistaa tietyn palautteen. (Miksi tällainen on?)
+// **GET /palaute** - Näyttää kaikki palautteet sivulla
+app.get("/palaute", (req, res) => {
+  res.json(feedback);
 });
 
-// Aina viimeisenä palvelimen käynnistys
-app.listen(port, host, () => console.log(`${host}:${port} kuuntelee...`));
+// **GET /palaute/:id** - Näyttää yksittäisen palautteen
+app.get("/palaute/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const palaute = feedback.find((f) => f.id === id);
+
+  if (!palaute) {
+    return res.status(404).json({ error: "Palautetta ei löytynyt" });
+  }
+
+  res.json(palaute);
+});
+
+// **POST /palaute/uusi** - Lisää uuden palautteen
+app.post("/palaute/uusi", (req, res) => {
+  const { nimi, email, viesti } = req.body;
+
+  if (!nimi || !email || !viesti) {
+    return res.status(400).json({ error: "Kaikki kentät ovat pakollisia" });
+  }
+
+  const uusiPalaute = {
+    id: feedback.length > 0 ? feedback[feedback.length - 1].id + 1 : 1,
+    name: nimi,
+    email: email,
+    feedback: viesti,
+  };
+
+  feedback.push(uusiPalaute);
+  res.json(uusiPalaute);
+});
+
+// **PUT /palaute/:id** - Muokkaa palautetta
+app.put("/palaute/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const { nimi, email, viesti } = req.body;
+  const index = feedback.findIndex((f) => f.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Palautetta ei löytynyt" });
+  }
+
+  // Päivitetään tiedot
+  feedback[index] = {
+    id,
+    name: nimi || feedback[index].name,
+    email: email || feedback[index].email,
+    feedback: viesti || feedback[index].feedback,
+  };
+
+  res.json(feedback[index]);
+});
+
+// **DELETE /palaute/:id** - Poistaa palautteen
+app.delete("/palaute/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const index = feedback.findIndex((f) => f.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Palautetta ei löytynyt" });
+  }
+
+  feedback.splice(index, 1);
+  res.json({ message: "Palaute poistettu" });
+});
+
+// Käynnistetään palvelin
+app.listen(port, host, () => {
+  console.log(`Palvelin käynnissä osoitteessa: http://localhost:${port}`);
+});

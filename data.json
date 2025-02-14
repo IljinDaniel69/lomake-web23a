@@ -1,12 +1,12 @@
 [
-    {
-        "name": "Nimi",
-        "email": "email@domain.invalid",
-        "feedback": "Tässä on palautetta."
-    },
-    {
-        "name": "Nimi",
-        "email": "email@domain.invalid",
-        "feedback": "Toinen palaute."
-    }
+  {
+    "id": 1,
+    "nimi": "Matti",
+    "viesti": "Hyvä palvelu!"
+  },
+  {
+    "id": 2,
+    "nimi": "Liisa",
+    "viesti": "Voisi olla parempi käyttöliittymä."
+  }
 ]

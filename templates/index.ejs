@@ -1,12 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="fi">
+  <head>
+    <meta charset="UTF-8" />
     <title>Palautelomake</title>
-    <link rel="stylesheet" href="styles/style.css">
-</head>
-<body>
-    <a href="/palautelomake"><h1>Palautelomake</h1></a>
-</body>
+    <link rel="stylesheet" href="/styles/style.css" />
+  </head>
+  <body>
+    <h2>Anna palautetta</h2>
+    <form action="/palaute/uusi" method="POST">
+      <label for="nimi">Nimi:</label>
+      <input type="text" id="nimi" name="nimi" required /><br /><br />
+
+      <label for="email">Sähköposti:</label>
+      <input type="email" id="email" name="email" required /><br /><br />
+
+      <label for="viesti">Palaute:</label><br />
+      <textarea id="viesti" name="viesti" rows="5" cols="40" required></textarea
+      ><br /><br />
+
+      <button type="submit">Lähetä</button>
+    </form>
+    <a href="/palaute">Katso kaikki palautteet</a>
+  </body>
 </html>
